@@ -6,140 +6,143 @@ Sistema completo de gestión de equipos dockerizado para desarrollo y producció
 
 ```
 FULLSTACK/
-├── backend/              # API Node.js + Express
-│   ├── src/
-│   ├── Dockerfile        # Producción
-│   └── Dockerfile.dev    # Desarrollo
-├── frontend/             # React + Vite
-│   ├── src/
-│   ├── Dockerfile        # Producción
-│   └── Dockerfile.dev    # Desarrollo
-├── db/
-│   └── init/            # Scripts SQL de inicialización
-│       ├── 01-schema.sql
-│       └── 02-seed.sql
-├── docker-compose.dev.yml   # Configuración desarrollo
-├── docker-compose.prod.yml  # Configuración producción
-└── .env                     # Variables de entorno
-```
+# GlobantTeamManager
+
+Aplicación fullstack para gestionar proyectos, usuarios y asignaciones.
+
+Stack principal
+
+- Backend: Node.js + Express + Sequelize (MySQL)
+- Frontend: React (Vite) + Tailwind + Formik/Yup
+- Autenticación: JSON Web Tokens (JWT)
+
+## Resumen rápido
+
+Este repo contiene dos carpetas principales: `backend/` y `frontend/`.
+
+- `backend/`: servidor Express, modelos Sequelize, migraciones y controladores.
+- `frontend/`: app React con rutas para login, dashboard, proyectos, usuarios y asignaciones.
 
 ## Requisitos
 
-- Docker 20.10+
-- Docker Compose 2.0+
-- Make (opcional, para usar comandos simplificados)
+- Node 18+ (solo si ejecutas localmente sin Docker)
+- Docker & Docker Compose (recomendado para desarrollo reproducible)
 
-## Inicio Rápido
+## Variables de entorno (backend)
 
-### Desarrollo
+Archivo `.env` en `backend/` (ejemplo mínimo):
+
+```
+
+PORT=4000
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=globant
+DB_USER=root
+DB_PASS=secret
+JWT_SECRET=changeme
+
+````
+
+## Levantar con Docker Compose (desarrollo)
+
+Desde la raíz del proyecto:
 
 ```bash
 docker-compose -f docker-compose.dev.yml up --build
-```
+````
 
-O con Make:
-
-```bash
-make dev
-```
-
-Servicios disponibles:
-
-- Frontend: http://localhost:3000
-- Backend: http://localhost:4000
-- MySQL: localhost:3306
-
-### Producción
+Para parar y eliminar volúmenes:
 
 ```bash
-docker-compose -f docker-compose.prod.yml up --build -d
+docker-compose -f docker-compose.dev.yml down -v
 ```
 
-O con Make:
+El frontend queda en `http://localhost:3000` y el backend en `http://localhost:4000` (valida tus archivos `docker-compose` si cambias puertos).
+
+## Ejecutar localmente sin Docker
+
+Backend:
 
 ```bash
-make prod
+cd backend
+npm install
+# crear .env o exportar variables
+npm start
 ```
 
-## Características
-
-### Entorno de Desarrollo
-
-- Hot reload en frontend (Vite)
-- Hot reload en backend (nodemon)
-- Volúmenes montados para desarrollo en tiempo real
-- MySQL con datos de prueba precargados
-- Logs en tiempo real
-
-### Entorno de Producción
-
-- Builds optimizados multi-stage
-- Imágenes minimizadas (Alpine Linux)
-- Usuario no-root para seguridad
-- Healthchecks configurados
-- Restart automático
-- Servidor estático optimizado (serve)
-
-## Base de Datos
-
-La base de datos MySQL se inicializa automáticamente con:
-
-### Tablas
-
-- `users` - Usuarios del sistema
-- `teams` - Equipos de trabajo
-- `team_members` - Relación usuarios-equipos
-- `projects` - Proyectos asignados a equipos
-
-### Datos de Prueba
-
-Usuario admin:
-
-- Email: admin@globant.com
-- Password: password (hash bcrypt)
-
-## Comandos Útiles
-
-### Con Make
+Frontend:
 
 ```bash
-make dev            # Levantar desarrollo
-make prod           # Levantar producción
-make down           # Detener servicios
-make clean          # Limpiar todo (contenedores, volúmenes, imágenes)
-make logs           # Ver logs de todos los servicios
-make backend-logs   # Ver logs del backend
-make frontend-logs  # Ver logs del frontend
-make db-logs        # Ver logs de MySQL
-make rebuild-dev    # Reconstruir imágenes dev sin cache
-make rebuild-prod   # Reconstruir imágenes prod sin cache
+cd frontend
+npm install
+npm run dev
 ```
 
-### Con Docker Compose
+## Migraciones y seeders
+
+Si trabajas localmente puedes ejecutar migraciones con Sequelize CLI:
 
 ```bash
-docker-compose -f docker-compose.dev.yml up
-docker-compose -f docker-compose.dev.yml down
-docker-compose -f docker-compose.dev.yml logs -f
-docker-compose -f docker-compose.dev.yml ps
-docker-compose -f docker-compose.dev.yml exec backend sh
-docker-compose -f docker-compose.dev.yml exec db mysql -u globant -psecret globant_tm
+cd backend
+npx sequelize db:migrate
+npx sequelize db:seed:all
 ```
 
-## Variables de Entorno
+Si usas Docker Compose, revisa si las migraciones ya se aplican automáticamente al levantar los contenedores.
 
-Configurar en archivo `.env`:
+## Endpoints principales
 
-```env
-NODE_ENV=development
-PORT=4000
-DB_CONNECTION=mysql
-DB_HOST=db
-DB_PORT=3306
-DB_DATABASE=globant_tm
-DB_USERNAME=globant
-DB_PASSWORD=secret
-```
+Autenticación:
+
+- POST /api/login — { correo, password } → devuelve token JWT
+
+Usuarios:
+
+- POST /api/users — crear usuario (público)
+- GET /api/users — listar usuarios (protegido)
+- PUT /api/users/:id — actualizar usuario (protegido)
+
+Proyectos:
+
+- GET /api/projects — listar proyectos (incluye `owner` si existe)
+- POST /api/projects — crear proyecto
+- PUT /api/projects/:id — actualizar
+- DELETE /api/projects/:id — eliminar
+
+Asignaciones:
+
+- GET /api/assignments — listar asignaciones (incluye `usuario` y `proyecto`)
+- GET /api/assignments/:id — obtener una asignación
+- POST /api/assignments — crear asignación
+DELETE /api/assignments/:id — eliminar
+
+Nota: los endpoints protegidos requieren el header `Authorization: Bearer <token>`.
+
+## Frontend (rutas principales)
+
+- /login
+- /dashboard
+- /projects
+- /users
+- /assignments
+
+El frontend guarda el token en `localStorage` y lo añade automáticamente a las peticiones mediante `src/api/http.js`.
+
+## Tips de desarrollo y mejoras pendientes
+
+- Añadir validaciones server-side más robustas.
+- Implementar control de roles (ACL) en el backend.
+- Agregar tests de integración para endpoints críticos.
+- Mejorar feedback en el frontend (toasts, bloqueos mientras se procesan peticiones).
+
+## Cómo contribuir
+
+- Crea una rama desde `develop` y abre un PR con una descripción clara.
+
+---
+
+Si quieres, incluyo ejemplos de `curl` para probar login / creación de recursos y un apartado con comandos Docker más detallados. ¿Te interesa que añada eso ahora?
 
 ## Troubleshooting
 
