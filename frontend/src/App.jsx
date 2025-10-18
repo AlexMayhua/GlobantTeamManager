@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
+import Users from "./Users";
+import Assignments from "./Assignments";
 import PrivateRoute from "./PrivateRoute";
 
 function App() {
@@ -13,6 +15,22 @@ function App() {
           element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <PrivateRoute>
+              <Users />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/assignments"
+          element={
+            <PrivateRoute>
+              <Assignments />
             </PrivateRoute>
           }
         />
