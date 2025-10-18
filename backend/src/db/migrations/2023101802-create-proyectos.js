@@ -18,7 +18,6 @@ module.exports = {
       references: { table: 'usuarios', field: 'id' },
       onUpdate: 'CASCADE', onDelete: 'SET NULL'
     });
-    // Check fecha_fin >= fecha_inicio (MySQL 8+)
     await qi.sequelize.query(
       'ALTER TABLE `proyectos` ADD CONSTRAINT chk_proyectos_fechas CHECK (fecha_fin IS NULL OR fecha_inicio IS NULL OR fecha_fin >= fecha_inicio);'
     );
