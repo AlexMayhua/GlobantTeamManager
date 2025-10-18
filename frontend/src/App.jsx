@@ -1,19 +1,25 @@
-import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { get } from './api/http'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./Login";
+import Dashboard from "./Dashboard";
+import PrivateRoute from "./PrivateRoute";
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [health, setHealth] = useState(null)
-  useEffect(() => { get('/health').then(setHealth).catch(()=>setHealth({error:true})) }, [])
-
   return (
-    <div>
-      Hola
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
