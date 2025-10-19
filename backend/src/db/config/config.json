@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "globant",
+    "password": "secret",
+    "database": "globant_tm",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "globant",
+    "password": "secret",
+    "database": "globant_tm",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "globant",
+    "password": "secret",
+    "database": "globant_tm",
+    "host": "localhost",
+    "dialect": "mysql"
+  }
+}
